@@ -20,13 +20,14 @@ class Neuron
 private:
     double m_output_value;
     vector<Connection> m_output_weights;
+    unsigned current_connection_index;
     static double randomWeight()
     {
         return rand() / double(RAND_MAX);
     };
 
 public:
-    Neuron(unsigned num_outputs);
+    Neuron(unsigned num_outputs, unsigned current_connection_index);
     double setOuputValue(double val) { m_output_value = val; };
     double getOuputValue() { return m_output_value; };
     void feedForward(Layer &previous_layer)
@@ -34,13 +35,13 @@ public:
         double sum = 0.0;
         for (unsigned current_neurone = 0; current_neurone < previous_layer.size(); current_neurone++)
         {
-            sum += previous_layer[current_neurone].m_output_value * previous_layer[current_neurone].m_output_weights[0].weight;
+            sum += previous_layer[current_neurone].m_output_value * previous_layer[current_neurone].m_output_weights[current_connection_index].weight;
         }
     };
 };
 
 // Attributing weight to neural network by getting the next outputs number
-Neuron::Neuron(unsigned num_outputs)
+Neuron::Neuron(unsigned num_outputs, unsigned current_connection_index)
 {
     for (unsigned connection = 0; connection < num_outputs; connection++)
     {
@@ -50,6 +51,8 @@ Neuron::Neuron(unsigned num_outputs)
         // Adding random weight
         m_output_weights.back().weight = randomWeight();
     }
+
+    current_connection_index = current_connection_index;
 }
 // end Neuron class
 
@@ -78,15 +81,15 @@ Net::Net(const vector<unsigned> &topology)
     {
         m_layers.push_back(Layer());
 
-        for (unsigned i = 0; i <= topology[current_layer]; i++)
+        for (unsigned current_neurone = 0; current_neurone <= topology[current_layer]; current_neurone++)
         {
             if (current_layer == topology.size() - 1)
             {
-                m_layers.back().push_back(Neuron(topology[current_layer + 1]));
+                m_layers.back().push_back(Neuron(topology[current_layer + 1], current_neurone));
             }
             else
             {
-                m_layers.back().push_back(Neuron(0));
+                m_layers.back().push_back(Neuron(0, current_neurone));
             }
             printf("Neurone created\n");
         }
