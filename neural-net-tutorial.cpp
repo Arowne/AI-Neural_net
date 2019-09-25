@@ -29,6 +29,7 @@ public:
     Neuron(unsigned num_outputs);
 };
 
+// Attributing weight to neural network by getting the next outputs number
 Neuron::Neuron(unsigned num_outputs)
 {
     for (unsigned connection = 0; connection < num_outputs; connection++)
@@ -59,6 +60,7 @@ public:
     void getResults(vector<double> &resultVals);
 };
 
+// Creation of constructor who attribute layer to neuralnet and neuron to this neural network
 Net::Net(const vector<unsigned> &topology)
 {
     unsigned numLayers = topology.size();
@@ -81,6 +83,7 @@ Net::Net(const vector<unsigned> &topology)
         }
     }
 }
+
 
 void Net::feedForward(const vector<double> &inputsVals)
 {
