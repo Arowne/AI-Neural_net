@@ -18,7 +18,7 @@ struct Connection
 class Neuron
 {
 private:
-    double m_outputs_value;
+    double m_output_value;
     vector<Connection> m_output_weights;
     static double randomWeight()
     {
@@ -27,6 +27,16 @@ private:
 
 public:
     Neuron(unsigned num_outputs);
+    double setOuputValue(double val) { m_output_value = val; };
+    double getOuputValue() { return m_output_value; };
+    void feedForward(Layer &previous_layer)
+    {
+        double sum = 0.0;
+        for (unsigned current_neurone = 0; current_neurone < previous_layer.size(); current_neurone++)
+        {
+            sum += previous_layer[current_neurone].m_output_value * previous_layer[current_neurone].m_output_weights[0].weight;
+        }
+    };
 };
 
 // Attributing weight to neural network by getting the next outputs number
@@ -41,7 +51,6 @@ Neuron::Neuron(unsigned num_outputs)
         m_output_weights.back().weight = randomWeight();
     }
 }
-
 // end Neuron class
 
 // Create multiple layers containing neuron
@@ -84,7 +93,6 @@ Net::Net(const vector<unsigned> &topology)
     }
 }
 
-
 void Net::feedForward(const vector<double> &inputsVals)
 {
     try
@@ -99,7 +107,18 @@ void Net::feedForward(const vector<double> &inputsVals)
     for (unsigned i = 0; i < inputsVals.size(); i++)
     {
         /* code */
-        // m_layers[0][i].setOutputVal(inputsVals[i]);
+        // For heach neurone atach value to neurone
+        m_layers[0][i].setOuputValue(inputsVals[i]);
+    }
+
+    // Go forward into layers neurone;
+    for (unsigned current_layers = 0; current_layers < m_layers.size(); current_layers++)
+    {
+
+        for (unsigned current_neurone = 0; current_neurone < m_layers[current_layers].size(); current_neurone++)
+        {
+            m_layers[current_layers][current_neurone].feedForward(&m_layers[current_layers - 1]);
+        }
     }
 }
 
