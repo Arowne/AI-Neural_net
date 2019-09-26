@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include <cassert>
+#include <cmath>
 
 using namespace std;
 
@@ -25,6 +26,15 @@ private:
     {
         return rand() / double(RAND_MAX);
     };
+    static double activationFunction(double x)
+    {
+        tanh(x);
+    };
+
+    static double activationDerivativeFunction(double x)
+    {
+        return -1.0 + x * x;
+    };
 
 public:
     Neuron(unsigned num_outputs, unsigned current_connection_index);
@@ -35,8 +45,9 @@ public:
         double sum = 0.0;
         for (unsigned current_neurone = 0; current_neurone < previous_layer.size(); current_neurone++)
         {
-            sum += previous_layer[current_neurone].m_output_value * previous_layer[current_neurone].m_output_weights[current_connection_index].weight;
+            sum += previous_layer[current_neurone].getOuputValue() * previous_layer[current_neurone].m_output_weights[current_connection_index].weight;
         }
+        m_output_value = Neuron::activationFunction(sum);
     };
 };
 
@@ -52,6 +63,7 @@ Neuron::Neuron(unsigned num_outputs, unsigned current_connection_index)
         m_output_weights.back().weight = randomWeight();
     }
 
+    // Set attribute connection to neurone
     current_connection_index = current_connection_index;
 }
 // end Neuron class
@@ -62,6 +74,9 @@ typedef vector<Neuron> Layer;
 class Net
 {
 private:
+    double m_error;
+    double m_recent_average_error;
+    double m_recent_average_smoothing_factor;
     // Create multiple layers containing all layer
     vector<Layer> m_layers;
 
@@ -125,6 +140,29 @@ void Net::feedForward(const vector<double> &inputsVals)
     }
 }
 
+// RMSE = sqrt(Σ((predict[i]-value[i]^2)/value_size))
+void Net::backProp(const vector<double> &targetVals)
+{
+    // Get last layer for get the value of output
+    Layer &output_layer = m_layers.back();
+
+    m_error = 0.0;
+
+    // Calculate get the RMS error
+    for (unsigned current_neurone = 0; current_neurone < output_layer.size(); current_neurone++)
+    {
+        // Get class neurone output value moins model value
+        double delta = targetVals[current_neurone] - output_layer[current_neurone].getOuputValue();
+        // Sum of square
+        m_error += delta * delta;
+    }
+
+    // Div by output size and square
+    m_error /= output_layer.size() - 1;
+    m_error = sqrt(m_error);
+    m_recent_average_error = (m_recent_average_smoothing_factor * m_recent_average_error + m_error) / (m_recent_average_smoothing_factor + 1.0);
+}
+
 int main()
 {
     vector<unsigned> topology;
@@ -133,7 +171,7 @@ int main()
     topology.push_back(2);
     topology.push_back(1);
 
-    Net myNet(topology);
+    // Net myNet(topology);
     // vector<double> inputsVals;
     // myNet.feedForward(inputsVals);
 
